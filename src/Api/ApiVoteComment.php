@@ -11,12 +11,16 @@ use MediaWiki\Rest\HttpException;
 use MediaWiki\Rest\LocalizedHttpException;
 use MediaWiki\Rest\Response;
 use MediaWiki\Rest\SimpleHandler;
+use MediaWiki\Rest\TokenAwareHandlerTrait;
+use MediaWiki\Rest\Validator\Validator;
 use MediaWiki\Status\StatusFormatter;
 use MediaWiki\User\TempUser\TempUserCreator;
 use Wikimedia\Message\MessageValue;
 use Wikimedia\ParamValidator\ParamValidator;
 
 class ApiVoteComment extends SimpleHandler {
+	use TokenAwareHandlerTrait;
+
 	private StatusFormatter $statusFormatter;
 
 	public function __construct(
@@ -84,6 +88,12 @@ class ApiVoteComment extends SimpleHandler {
 		] );
 	}
 
+	/** @inheritDoc */
+	public function validate( Validator $restValidator ): void {
+		parent::validate( $restValidator );
+		$this->validateToken( true );
+	}
+
 	/**
 	 * @inheritDoc
 	 */
@@ -94,7 +104,7 @@ class ApiVoteComment extends SimpleHandler {
 				ParamValidator::PARAM_TYPE => [ -1, 0, 1 ],
 				ParamValidator::PARAM_REQUIRED => true
 			],
-		];
+		] + $this->getTokenParamDefinition();
 	}
 
 	/**
