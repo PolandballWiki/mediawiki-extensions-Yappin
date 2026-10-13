@@ -73,6 +73,12 @@ class ApiEditComment extends SimpleHandler {
 			);
 		}
 
+		if ( !$comment->getActor()->isRegistered() ) {
+			throw new LocalizedHttpException(
+				new MessageValue( 'yappin-edit-error-anonymous' ), 400
+			);
+		}
+
 		$user = $this->getAuthority()->getUser();
 		if ( $comment->getActor()->getId() !== $user->getId() ) {
 			throw new LocalizedHttpException(
@@ -125,7 +131,8 @@ class ApiEditComment extends SimpleHandler {
 			);
 		}
 
-		$ownComment = $comment->getActor()->equals( $this->getAuthority()->getUser() );
+		$ownComment = $comment->getActor()->isRegistered() &&
+			$comment->getActor()->equals( $this->getAuthority()->getUser() );
 		$isMod = Utils::canUserModerate( $this->getAuthority() );
 
 		if ( $ownComment && $delete ) {
